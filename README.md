@@ -6,6 +6,8 @@ This project implements the TransMLA approach described in the paper ["TransMLA:
 
 Modern large language models (LLMs) often face communication bottlenecks rather than purely computational limitations. The TransMLA project addresses this issue by converting existing GQA-based models to use MLA, which offers greater expressive power with the same memory requirements.
 
+**Note**: This implementation currently supports LLaMA architecture models. For other model architectures, please refer to the original [TransMLA repository](https://github.com/fxmeng/TransMLA).
+
 ### Key Features
 
 - **Model Conversion**: Convert GQA-based models (e.g., LLaMA, Qwen, Mistral) to MLA models
