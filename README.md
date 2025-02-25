@@ -1,6 +1,8 @@
 # TransMLA: Multi-Head Latent Attention Converter
 
-This project implements the TransMLA approach described in the paper ["TransMLA: Multi-Head Latent Attention Is All You Need"](https://github.com/fxmeng/TransMLA) by Fanxu Meng, Zengwei Yao, and Muhan Zhang. This implementation is maintained by Alberto Ferrer at [https://github.com/bet0x/transmla-converter](https://github.com/bet0x/transmla-converter). The implementation provides tools to convert Group Query Attention (GQA) based models to Multi-Head Latent Attention (MLA) based models to enhance performance while maintaining the same KV cache size.
+This project implements the TransMLA approach described in the paper ["TransMLA: Multi-Head Latent Attention Is All You Need"](https://github.com/fxmeng/TransMLA) by Fanxu Meng, Zengwei Yao, and Muhan Zhang. 
+
+The implementation provides tools to convert Group Query Attention (GQA) based models to Multi-Head Latent Attention (MLA) based models to enhance performance while maintaining the same KV cache size.
 
 ## Overview
 
