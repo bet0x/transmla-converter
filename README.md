@@ -42,6 +42,19 @@ python transmla_converter.py --model "meta-llama/Llama-3-8B" --output "llama-mla
 python transmla_tester.py --model "llama-mla-model" --original "meta-llama/Llama-3-8B" --tokens 100
 ```
 
+#### Advanced Testing Options
+
+```bash
+# Test with GPU warm-up (recommended for accurate benchmarking)
+python transmla_tester.py --model "llama-mla-model" --original "meta-llama/Llama-3-8B" --tokens 100
+
+# Skip GPU warm-up (not recommended for benchmarking)
+python transmla_tester.py --model "llama-mla-model" --original "meta-llama/Llama-3-8B" --tokens 100 --no-warmup
+
+# Test with longer context to better observe KV cache benefits
+python transmla_tester.py --model "llama-mla-model" --original "meta-llama/Llama-3-8B" --tokens 100 --long-context
+```
+
 ### Fine-tuning a Converted Model
 
 ```bash
@@ -50,6 +63,16 @@ python transmla_finetune.py --model "llama-mla-model" --dataset "your_dataset.js
 ```
 
 Or finetune using Unsloth via https://docs.unsloth.ai/basics/reasoning-grpo-and-rl/tutorial-train-your-own-reasoning-model-with-grpo
+
+## Recent Updates
+
+### March 2025 Update
+
+- **MLA Model Detection**: Added proper detection of MLA architecture in the tester script. The tester now correctly identifies and reports whether a model is using MLA or standard GQA architecture.
+- **GPU Warm-up**: Implemented GPU warm-up before performance testing to ensure accurate benchmarking. This addresses the issue where the first model run is typically slower due to GPU initialization and compilation.
+- **Testing Options**: Added new command-line options for more flexible testing:
+  - `--no-warmup`: Skip GPU warm-up (not recommended for accurate benchmarking)
+  - `--long-context`: Test with longer context to better observe KV cache benefits
 
 ## How It Works
 

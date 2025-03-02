@@ -37,6 +37,19 @@ def test_model(model_path, prompt, max_tokens=100, use_flash_attn=True, measure_
         attn_implementation="flash_attention_2" if use_flash_attn else "eager"
     )
     
+    # Check if this is an MLA model
+    is_mla = False
+    if hasattr(model, 'config'):
+        if hasattr(model.config, 'architectures') and any('Mla' in arch for arch in model.config.architectures):
+            is_mla = True
+        elif hasattr(model.config, 'model_type') and 'mla' in model.config.model_type.lower():
+            is_mla = True
+    
+    if is_mla:
+        print("✓ Detected MLA model architecture")
+    else:
+        print("Note: This appears to be a standard GQA model, not an MLA model")
+    
     tokenizer = AutoTokenizer.from_pretrained(model_path)
     
     # Measure memory usage after loading
@@ -119,7 +132,7 @@ def test_model(model_path, prompt, max_tokens=100, use_flash_attn=True, measure_
     }
 
 
-def compare_models(original_model, mla_model, prompt, max_tokens=100, use_flash_attn=True, test_long_context=False):
+def compare_models(original_model, mla_model, prompt, max_tokens=100, use_flash_attn=True, test_long_context=False, skip_warmup=False):
     """
     Compare performance between original model and MLA model
     
@@ -130,8 +143,37 @@ def compare_models(original_model, mla_model, prompt, max_tokens=100, use_flash_
         max_tokens: Maximum number of tokens to generate
         use_flash_attn: Whether to use Flash Attention
         test_long_context: Whether to test with longer context
+        skip_warmup: Whether to skip GPU warm-up (not recommended)
     """
     print("===== MODEL COMPARISON =====")
+    
+    # Perform GPU warm-up runs if not skipped
+    if not skip_warmup:
+        print("\n[0] PERFORMING GPU WARM-UP...")
+        warmup_prompt = "This is a warm-up prompt to initialize the GPU."
+        warmup_tokens = 20
+        
+        # Warm up with original model
+        print("Warming up with original model...")
+        _ = test_model(original_model, warmup_prompt, warmup_tokens, use_flash_attn, measure_memory=False, test_long_context=False)
+        
+        # Clear cache between runs
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+            gc.collect()
+        
+        # Warm up with MLA model
+        print("Warming up with MLA model...")
+        _ = test_model(mla_model, warmup_prompt, warmup_tokens, use_flash_attn, measure_memory=False, test_long_context=False)
+        
+        # Clear cache between runs
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+            gc.collect()
+        
+        print("\nWarm-up completed. Starting actual performance tests...")
+    else:
+        print("\nSkipping GPU warm-up as requested. Note: This may affect benchmark accuracy.")
     
     # Test original model
     print("\n[1] ORIGINAL MODEL:")
@@ -184,6 +226,7 @@ if __name__ == "__main__":
     parser.add_argument("--tokens", type=int, default=100, help="Number of tokens to generate")
     parser.add_argument("--no-flash-attn", action="store_true", help="Disable Flash Attention")
     parser.add_argument("--long-context", action="store_true", help="Test with longer context to better observe KV cache benefits")
+    parser.add_argument("--no-warmup", action="store_true", help="Skip GPU warm-up (not recommended for accurate benchmarking)")
     
     args = parser.parse_args()
     
@@ -202,7 +245,8 @@ What are the main differences between GQA (Group Query Attention) and MLA (Multi
             prompt, 
             args.tokens, 
             not args.no_flash_attn,
-            args.long_context
+            args.long_context,
+            args.no_warmup
         )
     else:
         # Test only the MLA model
